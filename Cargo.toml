@@ -1,8 +1,0 @@
-[package]
-name = "coma"
-version = "0.1.0"
-edition = "2023"
-homepage = "https://github.com/emileclarkb/Kara"
-# keywords = ["package", "", "Kara", "Alexa", "assistant"]
-
-[dependencies]

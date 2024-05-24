@@ -1,4 +1,4 @@
-from Coma.Core.Commit import Commit
+from Coma.Types.CommitType import Commit
 
 class Branch:
     def __init__(self, name: str, commit: Commit) -> None:

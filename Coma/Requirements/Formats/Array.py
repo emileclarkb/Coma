@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 from Coma.Requirements.Result import Result
 from Coma.Requirements.Formats import FormatInterface, LengthInterface
@@ -10,8 +10,9 @@ class Array(LengthInterface):
                        min_length=None, 
                        max_length=None) -> None:
         super().__init__(fixed_length, min_length, max_length)
+        self.format = format
     
-    def Validate(self, x: list[Any]) -> Result:
+    def Validate(self, x: List[Any]) -> Result:
         if type(x) != list:
             return Result.Fail('not a list', value=x)
         # if we get an error from now on, don't just fail
@@ -24,19 +25,18 @@ class Array(LengthInterface):
         if not length_result: fail_reasons.extend(length_result.reasons)
         
         for i, value in enumerate(x):
-            format_result = format.Validate(value)
+            valid = self.format.Validate(value)
             
             # if we've already failed there's no use saving to `result`
             # so from here we simply aim to collect more reasons for failure
-            if format_result and not fail_reasons:
-                result.append(format_result.value)
+            if valid and not fail_reasons:
+                result.append(valid.value)
             # if the `if` statement failed then we can guarantee we're in a
             # failed state, so we should just free anything in `result`
             else:
                 if result: del result
-                msg = f'errors in Array, position {i}'
-                fail_reasons.append({msg, format_result.reasons})
-    
-         # check everything was successful         
+                msg = f'errors in Array, index {i}'
+                fail_reasons.append({msg, valid.reasons})
+          
         if fail_reasons: return Result.Fail(fail_reasons)
         return Result.Succeed(result)

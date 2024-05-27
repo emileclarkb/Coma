@@ -5,7 +5,7 @@ sys.path.append(f'{os.getcwd()}\\..\\..\\Coma\\Repo')
 from Coma import Coma
 from Coma.Providers import GitHub, GitLab, BitBucket
 
-from Coma.Requirements.Formats.Version import Version
+from Repo.Coma.Requirements.Formats.Complex.Version import Version
 
 
 

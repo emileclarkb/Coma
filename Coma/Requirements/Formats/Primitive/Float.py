@@ -2,7 +2,7 @@ from Coma.Requirements.Result import Result
 from Coma.Requirements.Formats import FormatInterface
 
 
-class Integer(FormatInterface):
+class Float(FormatInterface):
     def __init__(self, min_value: float = None, max_value: float = None) -> None:
         super().__init__()
         inf = float('inf')

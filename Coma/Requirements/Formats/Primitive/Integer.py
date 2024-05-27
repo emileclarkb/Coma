@@ -13,8 +13,4 @@ class Integer(FormatInterface):
     def Validate(self, x: int) -> Result:
         if type(x) != int:
             return Result.Fail('not an integer', value=x)
-        elif x < self.min:
-            return Result.Fail('value below minimum value {self.min_value}')
-        elif x > self.max:
-            return Result.Fail('value above maximum value {self.max_value}')
-        return Result.Succeed(x)
+        return super().Validate(x)

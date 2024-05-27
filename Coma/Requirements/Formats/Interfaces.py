@@ -30,6 +30,20 @@ class RegexInterface(FormatInterface):
         return Result.Succeed(result)
 
 
+class NumericInterface(FormatInterface):
+    def __init__(self, min_value, max_value, inf) -> None:
+        super().__init__()
+        self.max_value = inf if max_value is None else max_value
+        self.min_value = -inf if min_value is None else min_value
+
+    def Validate(self, x) -> Result:
+        if x < self.min:
+            return Result.Fail('value below minimum value {self.min_value}')
+        elif x > self.max:
+            return Result.Fail('value above maximum value {self.max_value}')
+        return Result.Succeed(x)
+
+
 LENGTH_ERROR = 'Coma {} format cannot have {} when fixed_length given'
 class LengthInterface(FormatInterface):
     def __init__(self, fixed_length: int | None,

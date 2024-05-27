@@ -140,7 +140,7 @@ class GitHub(Provider):
         path = 'https://raw.githubusercontent.com/{}/{}/{}/{}'
         path = path.format(component.author, component.name, branch, filename)
         result = requests.get(path)
-        return result.content if result.ok else None          filename: str) -> Optional['json']:
+        return result.content if result.ok else None
         
     
     @staticmethod

@@ -1,7 +1,7 @@
 from math import inf
 
 from Coma.Requirements.Result import Result
-from Coma.Requirements.Formats import LengthInterface
+from Coma.Requirements.Format.Interfaces import LengthInterface
 
 length_error_msg = 'Coma String format cannot have {} when fixed_length given'
 

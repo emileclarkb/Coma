@@ -1,7 +1,7 @@
 from typing import Any, List
 
 from Coma.Requirements.Result import Result
-from Coma.Requirements.Formats import FormatInterface, LengthInterface
+from Coma.Requirements.Format.Interfaces import FormatInterface, LengthInterface
 
 
 class Array(LengthInterface):
@@ -29,8 +29,8 @@ class Array(LengthInterface):
             
             # if we've already failed there's no use saving to `result`
             # so from here we simply aim to collect more reasons for failure
-            if valid and not fail_reasons:
-                result.append(valid.value)
+            if valid:
+                if not fail_reasons: result.append(valid.value)
             # if the `if` statement failed then we can guarantee we're in a
             # failed state, so we should just free anything in `result`
             else:

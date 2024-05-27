@@ -8,6 +8,7 @@ from math import inf
 
 from Coma.Requirements.Result import Result
 
+
 class FormatInterface:
     def __init__(self) -> None:
         pass
@@ -38,9 +39,9 @@ class NumericInterface(FormatInterface):
 
     def Validate(self, x) -> Result:
         if x < self.min:
-            return Result.Fail('value below minimum value {self.min_value}')
+            return Result.Fail(f'value below minimum value {self.min_value}')
         elif x > self.max:
-            return Result.Fail('value above maximum value {self.max_value}')
+            return Result.Fail(f'value above maximum value {self.max_value}')
         return Result.Succeed(x)
 
 
@@ -67,9 +68,9 @@ class LengthInterface(FormatInterface):
     def Validate(self, x) -> Result:
         length = len(x)
         if length < self.min_length:
-            reason = 'length {length} below min_length {self.min_length}'
+            reason = f'length {length} below min length {self.min_length}'
             return Result.Fail(reason, value=x)
         elif length > self.max_length:
-            reason = 'length {length} above max_length {self.max_length}'
+            reason = f'length {length} above max length {self.max_length}'
             return Result.Fail(reason, value=x)
         return Result.Succeed(x)

@@ -1,7 +1,7 @@
 from typing import Any, List
 
 from Coma.Requirements.Result import Result
-from Coma.Requirements.Formats import FormatInterface
+from Coma.Requirements.Format.Interfaces import FormatInterface
 
 
 class Struct(FormatInterface):
@@ -44,14 +44,14 @@ class Struct(FormatInterface):
             
             # if we've already failed there's no use saving to `result`
             # so from here we simply aim to collect more reasons for failure
-            if valid and not fail_reasons:
-                result.append(valid.value)
+            if valid:
+                if not fail_reasons: result.append(valid.value)
             # if the `if` statement failed then we can guarantee we're in a
             # failed state, so we should just free anything in `result`
             else:
                 if result: del result
                 msg = f'errors in Struct, index {i}'
-                fail_reasons.append({msg, valid.reasons})
+                fail_reasons.append({msg: valid.reasons})
        
         if fail_reasons: return Result.Fail(fail_reasons)
         return Result.Succeed(result)

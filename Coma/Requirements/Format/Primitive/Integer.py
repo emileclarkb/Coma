@@ -1,7 +1,7 @@
 from math import inf
 
 from Coma.Requirements.Result import Result
-from Coma.Requirements.Formats import FormatInterface
+from Coma.Requirements.Format.Interfaces import FormatInterface
 
 
 class Integer(FormatInterface):

@@ -47,52 +47,76 @@ class Version(MatchRegex):
     def Validate(self, x: str) -> Result:
         if type(x) != str:
             return Result.Fail('not a string', value=x)
+        # if we get an error from now on, don't just fail
+        # store the reason and move on (yield the reasons at the end)
+        fail_reasons = []
         
         result = super().Validate(x)
         if not result: return result        
         groups = result.value.groups()
+        
         prefix = groups[0]
         postfix = groups[-1]
-        
-        # get subcaptures and then add the final version number manually
-        versions = result.value.captures(2)
-        versions.append(groups[2])
-        
-        length = len(versions)
-        if length != self.version_numbers:
-            error_msg = 'version failed, allowed version numbers {}, got {}'
-            return Result.Fail(error_msg.format(self.version_numbers, length))
-        
-        # TODO: save these results, don't return them just yet!
-        #       then we can return all the results we need at the end!!
-        # ensure the case sensitivity was met
+        # ensure the case sensitivity and optional values were respected
+        # if a prefix is expected, check it is valid
         prefix_result = Version.CheckValueAllowed(prefix,
                                                   self.prefixes,
                                                   self.prefix_case_sensitive,
                                                   self.prefix_optional,
                                                   'prefix') 
-        
+        if not prefix_result: fail_reasons.extend(prefix_result.reasons) 
+        # if a postfix is expected, check it is valid
         postfix_result = Version.CheckValueAllowed(postfix,
                                                    self.postfixes,
                                                    self.postfix_case_sensitive,
                                                    self.postfix_optional,
                                                    'postfix') 
-
-        if not prefix_result: return prefix_result   
-        if not postfix_result: return postfix_result       
-                       
+        if not postfix_result: fail_reasons.extend(postfix_result.reasons)  
         
-        # validation succeeded, we can now create the version struct
-        version = VersionStruct(x, versions, prefix, postfix)
-        return Result.Succeed(version)
+        # get subcaptures and then add the final version number manually
+        versions = result.value.captures(2)
+        versions.append(groups[2])
+        
+        # check we received enough version numbers
+        length = len(versions)
+        if length != self.version_numbers:
+            error_msg = 'version failed, expected {} version numbers, got {}'
+            # return Result.Fail(error_msg.format(self.version_numbers, length))
+            error_msg = error_msg.format(self.version_numbers, length)
+            fail_reasons.append(error_msg)
+        # check each version number is valid
+        # and type cast to integers
+        for i, version_number in enumerate(versions):
+            if len(version_number) > self.max_version_digits:
+                reason = 'version number max length {}, got version \"{}\"'
+                reason = reason.format(self.max_version_digits, version_number)
+                fail_reasons.append(reason)
+            else:
+                versions[i] = int(versions[i])
+              
+        # check everything was successful         
+        if fail_reasons:
+            return result.Fail(fail_reasons)
+        else:
+            # validation succeeded, we can now create the version struct
+            version = VersionStruct(x, versions, prefix, postfix)
+            return Result.Succeed(version)
 
 
     @staticmethod
     def CheckValueAllowed(value: str, allowed_values: List[str], 
                           case_sensitive: bool, optional: bool,
                           value_name: str) -> Result:
-        if not value and not optional:
-            return Result.Fail(f'no {value_name} given')
+        # no allowed values were specified
+        if not allowed_values:
+            msg = f'{value_name} not required'
+            # but was a value was given anyways?!
+            if value:
+                return Result.Fail(f'{msg}, but got \"{value}\"')
+            # or no value was given
+            return Result.Succeed(msg)
+        elif not value and not optional:
+            return Result.Fail(f'{value_name} required but not given')
         
         lowercase_value = value.lower()
         lowercase_matches_found = []

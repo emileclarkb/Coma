@@ -1,8 +1,7 @@
 from typing import Optional, List
 
 from Coma.Requirements.Result import Result
-from Coma.Requirements.Formats import FormatInterface
-from Coma.Requirements.Formats.MatchRegex import MatchRegex
+from Coma.Requirements.Formats import RegexInterface
 
 
 class VersionStruct:
@@ -18,7 +17,7 @@ class VersionStruct:
     def __str__(self) -> str:
         return self.string
 
-class Version(MatchRegex):
+class Version(RegexInterface):
     def __init__(self, version_numbers = 3, 
                        max_version_digits = None,
                        delimiter = '.',
@@ -48,7 +47,7 @@ class Version(MatchRegex):
         if type(x) != str:
             return Result.Fail('not a string', value=x)
         # if we get an error from now on, don't just fail
-        # store the reason and move on (yield the reasons at the end)
+        # store the reason and move on (return the reasons at the end)
         fail_reasons = []
         
         result = super().Validate(x)
@@ -95,12 +94,11 @@ class Version(MatchRegex):
                 versions[i] = int(versions[i])
               
         # check everything was successful         
-        if fail_reasons:
-            return result.Fail(fail_reasons)
-        else:
-            # validation succeeded, we can now create the version struct
-            version = VersionStruct(x, versions, prefix, postfix)
-            return Result.Succeed(version)
+        if fail_reasons: return Result.Fail(fail_reasons)
+        
+        # validation succeeded, we can now create the version struct
+        version = VersionStruct(x, versions, prefix, postfix)
+        return Result.Succeed(version)
 
 
     @staticmethod

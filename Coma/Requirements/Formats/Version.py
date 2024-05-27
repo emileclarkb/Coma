@@ -18,10 +18,6 @@ class VersionStruct:
     def __str__(self) -> str:
         return self.string
 
-# TODO: allow prefixes/postfixes to have replacements (ie map to replacements)
-# TODO: use prefix/postfix_required instead of prefix/postfix_optional
-#       it makes more sense for humans
-# class Version(FormatInterface):
 class Version(MatchRegex):
     def __init__(self, version_numbers = 3, 
                        max_version_digits = None,
@@ -36,21 +32,6 @@ class Version(MatchRegex):
         self.max_version_digits = max_version_digits
         self.delimiter = delimiter
         
-        version_regex = Version.GetVersionRegex(version_numbers,
-                                                     max_version_digits,
-                                                     delimiter) 
-        prefix_regex = Version.GetAffixRegex('prefix',
-                                                  prefixes,
-                                                  prefix_optional,
-                                                  prefix_case_sensitive)
-        postfix_regex = Version.GetAffixRegex('postfix',
-                                                   postfixes,
-                                                   postfix_optional,
-                                                   postfix_case_sensitive)
-        expression = f'^{prefix_regex}{version_regex}{postfix_regex}$'
-        super().__init__(expression)
-        
-        
         self.prefixes = prefixes
         self.prefix_optional = prefix_optional
         self.prefix_case_sensitive = prefix_case_sensitive
@@ -59,7 +40,19 @@ class Version(MatchRegex):
         self.postfix_optional = postfix_optional
         self.postfix_case_sensitive = postfix_case_sensitive
         
-        
+        version_regex = Version.GetVersionRegex(version_numbers,
+                                                max_version_digits,
+                                                delimiter) 
+        prefix_regex = Version.GetAffixRegex('prefix',
+                                             prefixes,
+                                             prefix_optional,
+                                             prefix_case_sensitive)
+        postfix_regex = Version.GetAffixRegex('postfix',
+                                              postfixes,
+                                              postfix_optional,
+                                              postfix_case_sensitive)
+        expression = f'^{prefix_regex}{version_regex}{postfix_regex}$'
+        super().__init__(expression)
         
     @staticmethod
     def GetAffixRegex(name: str,
@@ -84,9 +77,7 @@ class Version(MatchRegex):
         affix_expr = '|'.join(affixes)
         expr = f'((?i:{affix_expr})?)'
         '''
-        
-        expr = '([^0-9]*)'
-        return expr
+        return '([^0-9]*)'
     
     @staticmethod
     def GetVersionRegex(version_numbers: int,
@@ -106,7 +97,11 @@ class Version(MatchRegex):
     
     @staticmethod
     def CheckValueAllowed(value: str, allowed_values: List[str], 
-                          case_sensitive: bool, value_name: str) -> Result:
+                          case_sensitive: bool, optional: bool,
+                          value_name: str) -> Result:
+        if not value and not optional:
+            return Result.Fail(f'no {value_name} given')
+        
         lowercase_value = value.lower()
         lowercase_matches_found = []
         for allowed in allowed_values:
@@ -141,23 +136,9 @@ class Version(MatchRegex):
         if type(x) != str:
             return Result.Fail('not a string', value=x)
         
-        '''
-        # we need these to create a VersionStruct
-        version_string = x  # save the unedited string for later
-        versions = []
-        version_prefix = None
-        version_postfix = None
-        '''
-        
         result = super().Validate(x)
-        if not result: return result
-        
+        if not result: return result        
         groups = result.value.groups()
-        # TODO: remove this debug section:
-        print('#'*15)
-        print(groups)
-        print(result.value.captures(2))
-        print('#'*15)
         prefix = groups[0]
         postfix = groups[-1]
         
@@ -165,18 +146,10 @@ class Version(MatchRegex):
         versions = result.value.captures(2)
         versions.append(groups[2])
         
-        
         length = len(versions)
         if length != self.version_numbers:
             error_msg = 'version failed, allowed version numbers {}, got {}'
             return Result.Fail(error_msg.format(self.version_numbers, length))
-        
-        # TODO: use the same method for case sensitivity!
-        if prefix is None and not self.prefix_optional:
-            return Result.Fail('version failed, no prefix given')
-        elif postfix is None and not self.postfix_optional:
-            return Result.Fail('version failed, no postfix given')
-        
         
         # TODO: save these results, don't return them just yet!
         #       then we can return all the results we need at the end!!
@@ -184,13 +157,16 @@ class Version(MatchRegex):
         prefix_result = Version.CheckValueAllowed(prefix,
                                                   self.prefixes,
                                                   self.prefix_case_sensitive,
+                                                  self.prefix_optional,
                                                   'prefix') 
-        if not prefix_result: return prefix_result   
         
         postfix_result = Version.CheckValueAllowed(postfix,
                                                    self.postfixes,
                                                    self.postfix_case_sensitive,
+                                                   self.postfix_optional,
                                                    'postfix') 
+
+        if not prefix_result: return prefix_result   
         if not postfix_result: return postfix_result       
                        
         
@@ -200,30 +176,3 @@ class Version(MatchRegex):
                                 prefix,
                                 postfix)
         return Result.Succeed(version)
-        
-        
-        '''
-        # validate the prefix
-        if self.prefixes is not None:
-            for prefix in self.prefixes:
-                if not self.prefix_case_sensitive:
-                    prefix = prefix.lower()
-                
-                # prefix match
-                if x.startswith(prefix):
-                    version_prefix = prefix
-                    # remove the prefix so we can continue parsing
-                    x = x.removeprefix(prefix)
-                    break
-                
-            # validation failed: no prefix given (and a prefix is required)
-            if version_prefix == None and not self.prefix_optional:
-                return Result.Fail('no prefix')
-
-        # validation succeeded, we can now create the version struct
-        version = VersionStruct(version_string,
-                                versions,
-                                version_prefix,
-                                version_postfix)
-        return Result.Succeed(version)
-        '''

@@ -12,5 +12,5 @@ class Provider:
         pass
 
     ''' Override '''
-    def Exists(self, _) -> Optional[ProviderData]:
+    def GetData(self, _) -> Optional[ProviderData]:
         return None

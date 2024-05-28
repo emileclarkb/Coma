@@ -1,4 +1,4 @@
-from Coma.Requirements.Result import Result
+from Coma.Result import Result
 from Coma.Requirements.Format.Interfaces import FormatInterface
 
 

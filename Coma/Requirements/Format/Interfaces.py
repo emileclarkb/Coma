@@ -6,7 +6,7 @@ our requirement validation can be built.
 import regex as re
 from math import inf
 
-from Coma.Requirements.Result import Result
+from Coma.Result import Result
 
 
 class FormatInterface:

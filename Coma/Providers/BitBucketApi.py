@@ -14,5 +14,5 @@ class BitBucket(Provider):
     def __init__(self) -> None:
         super().__init__()
 
-    def Exists(self, component: Component) -> Optional[BitBucketData]:
+    def GetData(self, component: Component) -> Optional[BitBucketData]:
         return None

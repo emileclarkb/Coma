@@ -28,7 +28,7 @@ class GitLab(Provider):
 
         # '"project_id":47682153,'
 
-    def Exists(self, component: Component) -> Optional[GitLabData]:
+    def GetData(self, component: Component) -> Optional[GitLabData]:
         path = self.GetRepoPath(component)
         result = requests.get(path)
         if not result.ok: return None

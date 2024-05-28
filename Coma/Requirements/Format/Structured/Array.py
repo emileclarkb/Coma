@@ -36,7 +36,7 @@ class Array(LengthInterface):
             else:
                 if result: del result
                 msg = f'errors in Array, index {i}'
-                fail_reasons.append({msg, valid.reasons})
+                fail_reasons.append({msg: valid.reasons})
           
         if fail_reasons: return Result.Fail(fail_reasons)
         return Result.Succeed(result)

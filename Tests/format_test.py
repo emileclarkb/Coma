@@ -1,3 +1,6 @@
+import os, sys
+sys.path.append(f'{os.getcwd()}\\Repo')
+
 import json
 from Coma.Requirements import Format
 
@@ -25,7 +28,7 @@ def main():
                                     postfix_case_sensitive = True)
     
     metadata_format = Format.Map({
-        'description': Format.String(max_length=100),
+        'description': Format.String(max_length=30),
         'maintained': Format.Boolean(),
         'latest_version': version_format,
         'versions': Format.Array(version_format)
@@ -34,7 +37,7 @@ def main():
     
     content = None
     # get the metadata to validate
-    with open('metadata.json', 'r') as f:
+    with open('Repo/Tests/metadata.json', 'r') as f:
         content = json.load(f)
     
     result = metadata_format.Validate(content)
@@ -44,13 +47,18 @@ def main():
     print()
     if not result.success: return 1
     for key, value in result.value.items():
-        print(f'{key}: {value}')
-    
-    # print(f'String: {result.value.string}')
-    # print(f'Versions: {result.value.versions}')
-    # print(f'Prefix: {result.value.prefix}')
-    # print(f'Postfix: {result.value.postfix}')
-    
+        if type(value) != list:
+            print(f'{key}: {repr(value)}')
+            continue
+        
+        print(f'{key}: [{str(value[0])}', end='')
+        indent = ' ' * (len(key) + 3)
+        length = len(value)
+        for i in range(length - 1):
+            text = f',\n{indent}{str(value[i+1])}'
+            print(text, end='')
+        # final element
+        print(']')
     
 if __name__ == '__main__':
     try:

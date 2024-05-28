@@ -5,17 +5,26 @@ from Coma.Requirements.Format.Interfaces import RegexInterface
 
 
 class VersionStruct:
-    def __init__(self, string: str,
+    def __init__(self, prefix: str,
                        versions: tuple[int, ...], 
-                       prefix: Optional[str],
-                       postfix: Optional[str]) -> None:
-        self.string = string
-        self.versions = versions
+                       postfix: str,
+                       delimiter: str,
+                       string: str = None) -> None:
         self.prefix = prefix
+        self.versions = versions
         self.postfix = postfix
+        self.delimiter = delimiter
+        if string is not None: self.string = string
+        else:
+            version_numbers = self.delimiter.join(self.versions)
+            self.string = f'{self.prefix}{version_numbers}{self.postfix}'
         
     def __str__(self) -> str:
         return self.string
+    def __repr__(self) -> str:
+        s = 'VersionStruct(\"{}\", {}, \"{}\", \"{}\")'
+        s = s.format(self.prefix, self.versions, self.postfix, self.delimiter)
+        return s
 
 class Version(RegexInterface):
     def __init__(self, version_numbers = 3, 
@@ -97,7 +106,8 @@ class Version(RegexInterface):
         if fail_reasons: return Result.Fail(fail_reasons)
         
         # validation succeeded, we can now create the version struct
-        version = VersionStruct(x, versions, prefix, postfix)
+        version = VersionStruct(prefix, versions, postfix, 
+                                self.delimiter, string=x)
         return Result.Succeed(version)
 
 

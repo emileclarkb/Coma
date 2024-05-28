@@ -1,7 +1,10 @@
+
+import json
+import toml
 from typing import List
 
 from Coma.Result import Result
-from Coma.GitManager import GitManager
+# from Coma.GitManager import GitManager
 from Coma.Types import Component
 from Coma.Providers import Provider
 from Coma.Requirements import Requirement
@@ -13,22 +16,43 @@ class Coma:
         self.providers = {provider.name: provider for provider in providers}
         self.requirements = []
 
-    def RequireFile(self, name: str, fallback=None, 
+    def RequireFile(self, name: str, type: str,
+                          fallback=None, 
                           format: FormatInterface = None) -> None:
-        requirement = Requirement(name, fallback, format)
+        requirement = Requirement(name, type, fallback, format)
         self.requirements.append(requirement)
     
-    def NewComponent(self, name: str, author: str) -> Component:
-        component = Component(name, author)
+    def NewComponent(self, author: str, name: str) -> Component:
+        component = Component(author, name)
         component.providers = dict.fromkeys(self.providers)
         return component
 
-
-    def RequirementsMet(self, component: Component) -> bool:
+    '''
+    Verify something is a package by checking all requirements are met
+    '''
+    def IsPackage(self, component: Component) -> Result:
+        good_results = []
+        bad_results = []
         for requirement in self.requirements:
             # Todo: use default branch name here instead
-            
-
+            # Todo: actually implement this (don't just use GitHub)
+            provider = self.providers['GitHub']
+            result = provider.GetFile(component, 'master', requirement.name)
+            if result:
+                if requirement.type == 'json':
+                    result.value = json.loads(result.value)
+                elif requirement.type == 'toml':
+                    result.value = toml.loads(result.value)
+                valid = requirement.format.Validate(result.value)
+                if valid:
+                    good_results.append(valid)
+                else:
+                    failure = Result.Fail(valid.reasons, value=result.value)
+                    bad_results.append(failure)
+            else:
+                bad_results.append(result)
+        if bad_results: return Result.Fail('not a package', value=bad_results)
+        return Result.Succeed(good_results)
     '''
     Find out which providers (ie github, gitlab, bitbucket)
     are hosting this component

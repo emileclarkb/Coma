@@ -1,5 +1,5 @@
 class Component:
-    def __init__(self, name: str, author: str) -> None:
+    def __init__(self, author: str, name: str) -> None:
         self.name = name
         self.author = author
 

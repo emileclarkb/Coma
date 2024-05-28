@@ -1,6 +1,8 @@
 import requests
-from typing import List, Optional, Union
+from typing import List, Optional
 
+# Todo: use results instead
+from Coma.Result import Result
 from Coma.Types import Author, Branch, Commit, Release, Component
 from Coma.Providers.ProviderApi import Provider, ProviderData
 
@@ -133,15 +135,40 @@ class GitHub(Provider):
             except KeyError as e:
                 print(e)
         return branches
+    # TODO: figure out what I was trying to do, I'm confused and give up for now
+    #       so just do this later on please
+    '''
+    @staticmethod
+    def GetFile(component: Component, branch: str, 
+                filename: str) -> Result:
+        result = GitHub.GetFileBytes(component, branch, filename)
+        if not result: return result
+        # decode the bytes content
+        encoding = response.encoding
+        content = result.value.decode()
     
     @staticmethod
-    def GetFileContent(component: Component, branch: str, 
-                       filename: str) -> Optional['json']:
+    def GetFileBytes(component: Component, branch: str, 
+                filename: str) -> Result:
         path = 'https://raw.githubusercontent.com/{}/{}/{}/{}'
         path = path.format(component.author, component.name, branch, filename)
-        result = requests.get(path)
-        return result.content if result.ok else None
-        
+        response = requests.get(path)
+        if not response.ok:
+            return Result.Fail(f'Code {response.status_code}, {response.reason}')
+        return Result.Succeed(response.content)
+    '''
+    @staticmethod
+    def GetFile(component: Component, branch: str, 
+                filename: str) -> Result:
+        path = 'https://raw.githubusercontent.com/{}/{}/{}/{}'
+        path = path.format(component.author, component.name, branch, filename)
+        response = requests.get(path)
+        if not response.ok:
+            return Result.Fail(f'Code {response.status_code}, {response.reason}')
+        # decode bytes object
+        encoding = response.encoding
+        content = response.content.decode(encoding)
+        return Result.Succeed(content)
     
     @staticmethod
     def GetReadme(component: Component, branch: str) -> Optional[str]:
